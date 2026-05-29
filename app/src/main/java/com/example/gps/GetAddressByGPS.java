@@ -1,42 +1,61 @@
 package com.example.gps;
 
-import android.location.Address;
 import android.os.AsyncTask;
 import android.widget.TextView;
 
+import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 
-import org.w3c.dom.Document;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.IOException;
 
-public class GetAddressByGPS extends AsyncTask<Void, Void, Void> {
-    TextView textAddress;
-    String coordinats;
-    String token = "TOOOOOOOOOOOOKEEEEEEEEEEEEN";
-    AddressResponse Response = null;
+public class GetAddressByGPS extends AsyncTask<Void, Void, String> {
 
-    public GetAddressByGPS(String coordinats, TextView TextAddress){
-        this.coordinats = coordinats;
-        this.textAddress - textAddress
+    private final TextView textAddress;
+    private final String coordinates;
+    private final String token = "TOOOOOOOOOOOOKEEEEEEEEEEEEN";
+
+    public GetAddressByGPS(String coordinates, TextView textAddress) {
+        this.coordinates = coordinates;
+        this.textAddress = textAddress;
     }
 
     @Override
-    protected Void doInVackground(Void... voids){
+    protected String doInBackground(Void... voids) {
         try {
-            Document document = Jsoup.connect("https://geocode-maps-yandex.ru/1.x/?apikey=" + token _ "&format=jsoup&geocode" + coordinats + "&results=1")
+            String url = "https://geocode-maps.yandex.ru/1.x/?apikey=" + token +
+                    "&format=json&geocode=" + coordinates + "&results=1";
+
+            Document doc = Jsoup.connect(url)
                     .ignoreContentType(true)
+                    .timeout(10000)
                     .get();
 
-            GsonBuilder builder = new GsonBuilder();
-            Response = builder.create().fromJson(document.text(), AddressResponse.class);
-        }catch (IOException e){
-            throw new RuntimeException(e);
+            Gson gson = new GsonBuilder().create();
+            AddressResponse response = gson.fromJson(doc.text(), AddressResponse.class);
+
+            if (response != null &&
+                    response.response != null &&
+                    response.response.GeoObjectCollection != null &&
+                    response.response.GeoObjectCollection.featureMembers != null &&
+                    !response.response.GeoObjectCollection.featureMembers.isEmpty()) {
+
+                return response.response.GeoObjectCollection.featureMembers.get(0)
+                        .GeoObject.metaDataProperty.GeocoderMetaData.text;
+            }
+
+        } catch (IOException e) {
+            e.printStackTrace();
         }
-        return null;
+        return "Не удалось определить адрес";
     }
+
     @Override
-    protected void onPostExecute(Void voids){
-        textAddress.setText(Response.response.GeoObjectCollection.featureMember.get(0).GeoObject.metaDataProperty.GeocoderMetaData.text);
+    protected void onPostExecute(String address) {
+        if (textAddress != null && address != null) {
+            textAddress.setText(address);
+        }
     }
 }
