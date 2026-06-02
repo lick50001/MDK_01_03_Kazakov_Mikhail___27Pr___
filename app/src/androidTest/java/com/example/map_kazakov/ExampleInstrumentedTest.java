@@ -1,4 +1,4 @@
-package com.example.gps;
+package com.example.map_kazakov;
 
 import android.content.Context;
 

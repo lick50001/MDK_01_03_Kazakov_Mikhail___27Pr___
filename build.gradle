@@ -6,6 +6,6 @@ plugins {
 repositories {
     mavenCentral()
     maven {
-        url "http://maven.google.com/"
+        url "https://maven.google.com/"
     }
 }

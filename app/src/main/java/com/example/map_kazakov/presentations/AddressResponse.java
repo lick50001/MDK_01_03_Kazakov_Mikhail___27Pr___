@@ -1,26 +1,23 @@
-package com.example.gps;
+package com.example.map_kazakov.presentations;
 
 import java.util.ArrayList;
 
 public class AddressResponse {
-    public class Response{
-        public class GeoObjectCollection{
-            public class FeatureMember{
-                public class GeoObject{
-                    public class MetaDataProperty{
-                        public class GeocoderMetaData{
+    public class Response {
+        public class GeoObjectCollection {
+            public class FeatureMember {
+                public class GeoObject {
+                    public class MetaDataProperty {
+                        public class GeocoderMetaData {
                             public String text;
                         }
-
                         public GeocoderMetaData GeocoderMetaData;
                     }
-
                     public MetaDataProperty metaDataProperty;
                 }
-
                 public GeoObject GeoObject;
             }
-            public ArrayList<FeatureMember> featureMembers;
+            public ArrayList<FeatureMember> featureMember;
         }
         public GeoObjectCollection GeoObjectCollection;
     }

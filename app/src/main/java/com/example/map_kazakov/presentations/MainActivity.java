@@ -1,4 +1,4 @@
-package com.example.gps;
+package com.example.map_kazakov.presentations;
 
 import android.Manifest;
 import android.content.pm.PackageManager;
@@ -8,31 +8,31 @@ import android.location.LocationManager;
 import android.os.Bundle;
 import android.widget.TextView;
 
-import androidx.activity.EdgeToEdge;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.graphics.Insets;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
 
-import com.yandex.mapkit.Image;
-import com.yandex.mapkit.MapKit;
-import com.yandex.mapkit.MapKitFactory;
+import com.yandex.mapkit.layers.GeoObjectTapListener;
 import com.yandex.mapkit.geometry.Point;
+import com.yandex.mapkit.map.PlacemarkMapObject;
+import com.yandex.runtime.image.ImageProvider;
+
+import com.example.map_kazakov.R;
+import com.yandex.mapkit.GeoObject;
+import com.yandex.mapkit.MapKitFactory;
 import com.yandex.mapkit.map.CameraPosition;
 import com.yandex.mapkit.mapview.MapView;
-import com.yandex.runtime.image.ImageProvider;
 
 public class MainActivity extends AppCompatActivity {
     LocationManager _LocationManger;
     TextView textAddress;
     MapView mapView;
+    private GeoObjectTapListener geoObjectTapListener;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        MapKitFactory.setApiKey("Key_Klimov");
+        MapKitFactory.setApiKey("64e8e208-941f-4ba5-be0c-8ec05a49d1b9");
         MapKitFactory.initialize(this);
         setContentView(R.layout.activity_main);
 
@@ -40,6 +40,27 @@ public class MainActivity extends AppCompatActivity {
         textAddress = findViewById(R.id.editText);
 
         _LocationManger = (LocationManager) getSystemService(LOCATION_SERVICE);
+
+        geoObjectTapListener = event -> {
+            GeoObject geoObject = event.getGeoObject();
+
+            if (geoObject != null && !geoObject.getGeometry().isEmpty()) {
+                Point worldPoint = geoObject.getGeometry().get(0).getPoint();
+
+                if (worldPoint != null) {
+                    mapView.getMap().getMapObjects().clear();
+                    PlacemarkMapObject placemark = mapView.getMap().getMapObjects()
+                            .addPlacemark(worldPoint, ImageProvider.fromResource(MainActivity.this, R.drawable.location));
+
+                    String coords = worldPoint.getLongitude() + "," + worldPoint.getLatitude();
+                    new GetAddressByGPS(coords, textAddress).execute();
+                }
+            }
+
+            return true;
+        };
+
+        mapView.getMap().addTapListener(geoObjectTapListener);
     }
 
     LocationListener _locationListener = new LocationListener() {
